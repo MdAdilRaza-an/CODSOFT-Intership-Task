@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.*
+!.env.example
+coverage/
+logs/
+*.log
+*.log.*
+*.pem
+*.key
+*.pfx
+*.jks
+*.keystore
+*token*
+*credential*
+*secret*
+.DS_Store

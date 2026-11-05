@@ -1,0 +1,49 @@
+{
+  "info": {
+    "name": "To-Do List Backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Register",
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Password123!\"\n}" }, "url": "{{baseUrl}}/api/auth/register" }
+    },
+    {
+      "name": "Login",
+      "event": [{ "listen": "test", "script": { "exec": ["const json = pm.response.json();", "if (json.data && json.data.token) pm.collectionVariables.set('token', json.data.token);"], "type": "text/javascript" } }],
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Password123!\"\n}" }, "url": "{{baseUrl}}/api/auth/login" }
+    },
+    {
+      "name": "Get Current User",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/auth/me" }
+    },
+    {
+      "name": "Create Task",
+      "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Complete project\",\n  \"description\": \"Finish backend implementation\",\n  \"due_date\": \"2026-12-01T10:00:00.000Z\",\n  \"priority\": \"high\",\n  \"category\": \"work\"\n}" }, "url": "{{baseUrl}}/api/tasks" }
+    },
+    {
+      "name": "List Tasks",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/tasks?status=pending&priority=high&page=1&limit=10&sortBy=created_at&order=DESC" }
+    },
+    {
+      "name": "Get Task",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/tasks/1" }
+    },
+    {
+      "name": "Update Task",
+      "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated project\",\n  \"priority\": \"medium\"\n}" }, "url": "{{baseUrl}}/api/tasks/1" }
+    },
+    {
+      "name": "Complete Task",
+      "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"status\": \"completed\"}" }, "url": "{{baseUrl}}/api/tasks/1/status" }
+    },
+    {
+      "name": "Delete Task",
+      "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/tasks/1" }
+    }
+  ]
+}

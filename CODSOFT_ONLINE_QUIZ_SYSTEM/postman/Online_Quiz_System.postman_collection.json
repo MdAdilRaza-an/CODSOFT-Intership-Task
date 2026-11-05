@@ -1,0 +1,234 @@
+
+{
+  "info": {
+    "name": "CODSOFT Online Quiz System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "quizId",
+      "value": "1"
+    },
+    {
+      "key": "attemptId",
+      "value": "1"
+    },
+    {
+      "key": "resultId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Demo User\",\"email\":\"demo@example.com\",\"password\":\"StrongPass123\"}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"demo@example.com\",\"password\":\"StrongPass123\"}"
+            }
+          }
+        },
+        {
+          "name": "Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quiz",
+      "item": [
+        {
+          "name": "List quizzes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quizzes"
+          }
+        },
+        {
+          "name": "Create quiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/quizzes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"JavaScript Basics\",\"description\":\"Core JavaScript quiz\",\"category\":\"Programming\",\"duration_seconds\":600,\"total_marks\":10,\"passing_marks\":5,\"negative_marks\":1,\"allow_negative_score\":false,\"max_attempts\":3,\"random_question_count\":5,\"certificate_threshold\":80}"
+            }
+          }
+        },
+        {
+          "name": "Publish quiz",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/quizzes/{{quizId}}/publish",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"published\":true}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attempt and Results",
+      "item": [
+        {
+          "name": "Start attempt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/quizzes/{{quizId}}/attempts"
+          }
+        },
+        {
+          "name": "Get attempt questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/attempts/{{attemptId}}/questions"
+          }
+        },
+        {
+          "name": "Submit answers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/attempts/{{attemptId}}/submit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"answers\":[]}"
+            }
+          }
+        },
+        {
+          "name": "Get result",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/results/{{resultId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "item": [
+        {
+          "name": "Global leaderboard",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/leaderboard"
+          }
+        },
+        {
+          "name": "Quiz leaderboard",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quizzes/{{quizId}}/leaderboard"
+          }
+        },
+        {
+          "name": "My statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/users/me/statistics"
+          }
+        }
+      ]
+    }
+  ]
+}

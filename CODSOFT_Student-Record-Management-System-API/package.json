@@ -1,0 +1,19 @@
+{
+  "name": "codsoft_task1",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "node --test --test-concurrency=1",
+    "start": "node src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Student Record Management API for CodSoft Backend Development Internship Task 1",
+  "dependencies": {
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "mysql2": "^3.24.6"
+  },
+  "type": "commonjs"
+}

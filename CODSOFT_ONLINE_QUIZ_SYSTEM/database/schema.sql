@@ -1,0 +1,114 @@
+CREATE DATABASE IF NOT EXISTS codsoft_quiz CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE codsoft_quiz;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('ADMIN','PARTICIPANT') NOT NULL DEFAULT 'PARTICIPANT',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_users_role (role)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS quizzes (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(180) NOT NULL,
+  description TEXT,
+  category VARCHAR(100),
+  duration_seconds INT UNSIGNED NOT NULL DEFAULT 600,
+  total_marks DECIMAL(10,2) NOT NULL DEFAULT 0,
+  passing_marks DECIMAL(10,2) NOT NULL DEFAULT 0,
+  negative_marks DECIMAL(10,2) NOT NULL DEFAULT 0,
+  allow_negative_score BOOLEAN NOT NULL DEFAULT FALSE,
+  max_attempts INT UNSIGNED NOT NULL DEFAULT 1,
+  random_question_count INT UNSIGNED NOT NULL DEFAULT 0,
+  certificate_threshold DECIMAL(5,2) NOT NULL DEFAULT 80.00,
+  start_at TIMESTAMP NULL,
+  end_at TIMESTAMP NULL,
+  is_published BOOLEAN NOT NULL DEFAULT FALSE,
+  created_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  INDEX idx_quizzes_published (is_published),
+  INDEX idx_quizzes_category (category),
+  INDEX idx_quizzes_dates (start_at, end_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS questions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  quiz_id BIGINT UNSIGNED NOT NULL,
+  text TEXT NOT NULL,
+  marks DECIMAL(10,2) NOT NULL DEFAULT 1,
+  position INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_quiz_position (quiz_id, position),
+  INDEX idx_questions_quiz (quiz_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS options (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  question_id BIGINT UNSIGNED NOT NULL,
+  text VARCHAR(500) NOT NULL,
+  is_correct BOOLEAN NOT NULL DEFAULT FALSE,
+  position INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_question_position (question_id, position),
+  INDEX idx_options_question (question_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS quiz_attempts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  quiz_id BIGINT UNSIGNED NOT NULL,
+  status ENUM('IN_PROGRESS','COMPLETED','EXPIRED','CANCELLED') NOT NULL DEFAULT 'IN_PROGRESS',
+  started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP NOT NULL,
+  submitted_at TIMESTAMP NULL,
+  selected_question_ids JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (quiz_id) REFERENCES quizzes(id),
+  INDEX idx_attempt_user_quiz (user_id, quiz_id),
+  INDEX idx_attempt_status_expiry (status, expires_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS submitted_answers (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  attempt_id BIGINT UNSIGNED NOT NULL,
+  question_id BIGINT UNSIGNED NOT NULL,
+  option_id BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (attempt_id) REFERENCES quiz_attempts(id) ON DELETE CASCADE,
+  FOREIGN KEY (question_id) REFERENCES questions(id),
+  FOREIGN KEY (option_id) REFERENCES options(id),
+  UNIQUE KEY uq_attempt_question (attempt_id, question_id),
+  INDEX idx_answer_attempt (attempt_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS quiz_results (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  attempt_id BIGINT UNSIGNED NOT NULL UNIQUE,
+  user_id BIGINT UNSIGNED NOT NULL,
+  quiz_id BIGINT UNSIGNED NOT NULL,
+  total_marks DECIMAL(10,2) NOT NULL,
+  obtained_marks DECIMAL(10,2) NOT NULL,
+  percentage DECIMAL(5,2) NOT NULL,
+  passed BOOLEAN NOT NULL,
+  certificate_eligible BOOLEAN NOT NULL DEFAULT FALSE,
+  completion_seconds INT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (attempt_id) REFERENCES quiz_attempts(id),
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (quiz_id) REFERENCES quizzes(id),
+  INDEX idx_results_user (user_id),
+  INDEX idx_results_quiz_score (quiz_id, obtained_marks DESC)
+) ENGINE=InnoDB;
